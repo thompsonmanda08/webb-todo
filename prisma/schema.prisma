@@ -69,6 +69,7 @@ model VerificationToken {
 model TodoList {
     id        String   @id @default(cuid())
     name      String
+    completed Boolean  @default(false)
     userId    String
     todos     Todo[]
     createdAt DateTime @default(now())

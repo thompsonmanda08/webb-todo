@@ -1,5 +1,4 @@
 import { createTRPCRouter } from "~/server/api/trpc";
-import { exampleRouter } from "~/server/api/routers/example";
 import { todoListRouter } from "./routers/todoList";
 import { todoRouter } from "./routers/todo";
 
@@ -9,7 +8,6 @@ import { todoRouter } from "./routers/todo";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  example: exampleRouter,
   todoList: todoListRouter,
   todo: todoRouter,
 });

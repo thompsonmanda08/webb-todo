@@ -13,17 +13,27 @@ export const todoRouter = createTRPCRouter({
       });
     }),
 
-  create: protectedProcedure
+  createOrUpdate: protectedProcedure
     .input(
       z.object({
+        id: z.string(),
         title: z.string(),
         description: z.string(),
         todoListId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      return ctx.prisma.todo.create({
-        data: {
+      return ctx.prisma.todo.upsert({
+        where: {
+          id: input.id,
+        },
+
+        update: {
+          title: input.title,
+          description: input.description,
+        },
+
+        create: {
           title: input.title,
           description: input.description,
           todoListId: input.todoListId,
@@ -41,22 +51,28 @@ export const todoRouter = createTRPCRouter({
       });
     }),
 
-  update: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        title: z.string(),
-        description: z.string(),
-      })
-    )
+  markDone: protectedProcedure
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.todo.update({
         where: {
           id: input.id,
         },
         data: {
-          title: input.title,
-          description: input.description,
+          completed: true,
+        },
+      });
+    }),
+
+  markUnDone: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.todo.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          completed: false,
         },
       });
     }),

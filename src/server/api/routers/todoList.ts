@@ -2,9 +2,9 @@ import { string, z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
-export const todoListRouter = createTRPCRouter({
+export const todoRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.todoList.findMany({
+    return ctx.prisma.todo.findMany({
       where: {
         userId: ctx.session.user.id,
       },
@@ -14,7 +14,7 @@ export const todoListRouter = createTRPCRouter({
   createOrUpdate: protectedProcedure
     .input(z.object({ name: string(), id: z.string() }))
     .mutation(({ ctx, input }) => {
-      return ctx.prisma.todoList.upsert({
+      return ctx.prisma.todo.upsert({
         where: {
           id: input.id,
         },
@@ -31,7 +31,7 @@ export const todoListRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.prisma.todoList.delete({
+      return ctx.prisma.todo.delete({
         where: {
           id: input.id,
         },
@@ -41,7 +41,7 @@ export const todoListRouter = createTRPCRouter({
   markDone: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.prisma.todoList.update({
+      return ctx.prisma.todo.update({
         where: {
           id: input.id,
         },
@@ -54,7 +54,7 @@ export const todoListRouter = createTRPCRouter({
   markUnDone: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.prisma.todoList.update({
+      return ctx.prisma.todo.update({
         where: {
           id: input.id,
         },

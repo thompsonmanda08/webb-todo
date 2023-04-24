@@ -1,74 +1,69 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { TodoListContext } from "~/context/todoListContext";
-import { api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import EmptyState from "./EmptyState";
 
-//type TodoList = RouterOutputs["todoList"]["getAll"][0];
+type Todo = RouterOutputs["todo"]["getAll"][0];
 
 const TodoList: React.FC = () => {
   const { data: sessionData } = useSession();
-  // const [selectedTodoList, setSelectedTodoList] = useState<TodoList | null>(
-  //   null
-  // );
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
 
-  const { selectedTodoList, setSelectedTodoList } = useContext(TodoListContext);
-  const [todoListItem, setTodoListItem] = useState({
+  const [todoItem, setTodoItem] = useState({
     id: "",
     name: "",
   });
 
   // Get all Todo Lists
-  const { data: todoList, refetch: refetchTodoList } =
-    api.todoList.getAll.useQuery(
-      undefined, // no input
-      {
-        enabled: sessionData?.user !== undefined,
-      }
-    );
+  const { data: todos, refetch: refetchTodos } = api.todo.getAll.useQuery(
+    undefined, // no input
+    {
+      enabled: sessionData?.user !== undefined,
+    }
+  );
 
   // To Create a TodoList
-  const createTodoList = api.todoList.createOrUpdate.useMutation({
+  const createTodoList = api.todo.createOrUpdate.useMutation({
     onSuccess: async () => {
-      await refetchTodoList();
+      await refetchTodos();
     },
   });
 
   // Delete a TodoList
-  const deleteTodoList = api.todoList.delete.useMutation({
+  const deleteTodoList = api.todo.delete.useMutation({
     onSuccess: () => {
-      void refetchTodoList();
+      void refetchTodos();
     },
   });
 
   // Mark Todo List Completed
-  const markDone = api.todoList.markDone.useMutation({
+  const markDone = api.todo.markDone.useMutation({
     onSuccess: () => {
-      void refetchTodoList();
+      void refetchTodos();
     },
   });
 
   // Mark Todo List NOT Completed
-  const markUnDone = api.todoList.markUnDone.useMutation({
+  const markUnDone = api.todo.markUnDone.useMutation({
     onSuccess: () => {
-      void refetchTodoList();
+      void refetchTodos();
     },
   });
 
   // Clean up all fields
   const handleResetInputs = () => {
-    setTodoListItem({ name: "", id: "" });
-    setTodoListItem({ name: "", id: "" });
+    setTodoItem({ name: "", id: "" });
+    setTodoItem({ name: "", id: "" });
   };
 
   const handleCreateOrUpdate = () => {
-    if (todoListItem.name == "") {
+    if (todoItem.name == "") {
       return;
     } else {
       createTodoList.mutate({
-        name: todoListItem.name,
-        id: todoListItem.id,
+        name: todoItem.name,
+        id: todoItem.id,
       });
     }
     handleResetInputs();
@@ -80,11 +75,11 @@ const TodoList: React.FC = () => {
         <input
           type="text"
           name=""
-          value={todoListItem.name}
+          value={todoItem.name}
           placeholder="Pick up groceries from..."
           className="input-bordered input input-md w-full bg-[#020005] placeholder:text-white/20"
           onChange={(e) => {
-            setTodoListItem({ ...todoListItem, name: e.currentTarget.value });
+            setTodoItem({ ...todoItem, name: e.currentTarget.value });
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && e.currentTarget.value !== "")
@@ -99,29 +94,29 @@ const TodoList: React.FC = () => {
         </button>
       </div>
       <div className="divider"></div>
-      {todoList && todoList?.length !== 0 ? (
+      {todos && todos?.length !== 0 ? (
         <ul className={`menu rounded-box min-h-16 w-full bg-[#15272c4a] p-2`}>
-          {todoList?.map((listItem) => {
+          {todos?.map((todo) => {
             return (
               <li
-                key={listItem.id}
+                key={todo.id}
                 className={`${
-                  selectedTodoList === listItem ? "bg-[#0d2434fc]" : ""
+                  selectedTodo === todo ? "bg-[#0d2434fc]" : ""
                 }  flex flex-row items-center rounded-2xl pr-3 hover:bg-[#15162c4a]`}
                 onClick={() => {
-                  setSelectedTodoList(listItem);
+                  setSelectedTodo(todo);
                 }}
               >
                 <label className="label cursor-pointer bg-transparent hover:bg-transparent">
                   <input
                     type="checkbox"
-                    checked={listItem.completed}
+                    checked={todo.completed}
                     className="checkbox-primary checkbox  rounded-full border-[1px]"
                     onClick={() => {
-                      if (listItem.completed) {
-                        markUnDone.mutate({ id: listItem.id });
+                      if (todo.completed) {
+                        markUnDone.mutate({ id: todo.id });
                       } else {
-                        markDone.mutate({ id: listItem.id });
+                        markDone.mutate({ id: todo.id });
                       }
                     }}
                   />
@@ -130,14 +125,14 @@ const TodoList: React.FC = () => {
                 <Link
                   href="#"
                   className={`${
-                    listItem.completed ? "text-slate-700 line-through" : ""
+                    todo.completed ? "text-slate-700 line-through" : ""
                   } -ml-4 mr-auto bg-transparent outline-none`}
                   onClick={(e) => {
                     e.preventDefault();
-                    setSelectedTodoList(listItem);
+                    setSelectedTodo(todo);
                   }}
                 >
-                  {listItem.name}
+                  {todo.name}
                 </Link>
 
                 <span className="max-w-[145px] bg-transparent outline-none ">
@@ -145,7 +140,7 @@ const TodoList: React.FC = () => {
                     href="#edit"
                     className="btn-sm btn bg-primary capitalize text-black hover:bg-primary/60"
                     onClick={() => {
-                      setTodoListItem({ name: listItem.name, id: listItem.id });
+                      setTodoItem({ name: todo.name, id: todo.id });
                     }}
                   >
                     Edit
@@ -156,12 +151,12 @@ const TodoList: React.FC = () => {
                       <input
                         type="text"
                         name=""
-                        value={todoListItem.name}
+                        value={todoItem.name}
                         placeholder="Pick up groceries from..."
                         className="input-bordered input input-md w-full bg-[#020005] placeholder:text-white/20"
                         onChange={(e) => {
-                          setTodoListItem({
-                            ...todoListItem,
+                          setTodoItem({
+                            ...todoItem,
                             name: e.currentTarget.value,
                           });
                         }}
@@ -204,14 +199,14 @@ const TodoList: React.FC = () => {
                     <label htmlFor="" className="modal-box">
                       <p>Are you sure you want to delete the TodoList?</p>
                       <h2 className="text-xl font-semibold">
-                        &ldquo;{listItem.name}&ldquo;
+                        &ldquo;{todo.name}&ldquo;
                       </h2>
                       <div className="modal-action">
                         <a
                           href="#"
                           className="text-md btn-error btn font-semibold capitalize"
                           onClick={() => {
-                            deleteTodoList.mutate({ id: listItem.id });
+                            deleteTodoList.mutate({ id: todo.id });
                             handleResetInputs();
                           }}
                         >

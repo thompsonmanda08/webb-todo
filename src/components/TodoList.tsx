@@ -90,7 +90,7 @@ const TodoList: React.FC = () => {
           className="text-md btn-primary btn font-semibold capitalize"
           onClick={handleCreateOrUpdate}
         >
-          Create Todo List
+          Create Todo
         </button>
       </div>
       <div className="divider"></div>

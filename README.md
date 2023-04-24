@@ -1,12 +1,9 @@
-# Create T3 App
+# WEBB-TODO
+### Next-Gen Todo App
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+This app prototype is built with the [T3 Stack](https://create.t3.gg/) 
 
-## What's next? How do I make an app with this?
-
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
-
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+#### The following are the technologies used in this project. Please refer to the respective docs.
 
 - [Next.js](https://nextjs.org)
 - [NextAuth.js](https://next-auth.js.org)
@@ -14,15 +11,43 @@ If you are not familiar with the different technologies used in this project, pl
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)
 
-## Learn More
+## WEBB-TODO - THE ULTIMATE TODO APP | Just for Laughs 😂 
+![WEBB-TODO LANDING PAGE](/public/screenshot.png)
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+## Cloning the Repository
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+1. Open a terminal window and navigate to the directory where you want to clone the repository then 
+copy and paste the following command into your terminal: `git clone https://github.com/thompsonmanda08/webb-todo.git`
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## Installing Dependencies
+1. Navigate to the cloned repository directory in the terminal.
 
-## How do I deploy this?
+2. Type `npm install` and press Enter to install the required dependencies listed in the ***package.json*** file.
+Wait for the installation to complete.
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+## Setting Environment Variables
+1. In the root directory of the cloned repository, create a new file named .env *(Note: The dot at the beginning of the filename is important).*
+
+2. Open the ***.env file*** in a text editor.
+
+3. Copy the contents of the **.env.example file** (if it exists) into the **.env file.** to propergate the .env file with the actual values for your environment. These may include database connection strings, API keys, and other sensitive information.
+***Be sure to save the file after making changes.***
+
+## Syncing with the Local Database File
+1. for demo purposes, I would suggest using a database served on your local machine, SQLite is the best for small-medium sized applications. There is a **db.sqlite** file with in the prisma folder and that is where you can connect to, if for some reason it does not exist, make sure to create one.
+
+2. The DATABASE_URL environment variable should be pointing to the file path of the SQLite database file i.e. `DATABASE_URL="file:./db.sqlite"`
+
+3. Type `npx prisma migrate dev` or `npx prisma migrate dev --name [nameOfMigration]` in the terminal and press Enter to apply any pending database migrations.
+4. Wait for the migration to complete.
+
+
+## Running the App
+
+1. Type `npm run dev` in the terminal and press Enter to start the development server.
+
+2. Wait for the server to start and for the app to compile.
+
+3. Open a web browser and/or navigate to http://localhost:3000 to view the app.
+
+4 *Congratulations!:* You should now be able to use the Todo App on your local machine but you may need to sign up first. Dont worry that database is yours and is on your local machine, all your accounts are safe!😎

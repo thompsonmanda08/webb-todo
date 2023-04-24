@@ -7,7 +7,7 @@ export const Navbar = () => {
   return (
     <nav className="bg-b navbar fixed top-0 z-50 border-b-[1px] border-base-300 bg-transparent bg-gradient-to-b from-[#ffffff09] to-[#a8a8a805] backdrop-blur-md ">
       <div className="flex-1">
-        <a className="btn-ghost btn text-xl normal-case">WeeDoo</a>
+        <a className="btn-ghost btn text-xl normal-case">WEBB-TODO</a>
       </div>
 
       {sessionData ? (

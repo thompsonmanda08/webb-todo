@@ -2,121 +2,105 @@ import React, { useContext, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { TodoListContext } from "~/context/todoListContext";
-import { api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import EmptyState from "./EmptyState";
 
-//type TodoList = RouterOutputs["todoList"]["getAll"][0];
+//TYPES
+type Todo = RouterOutputs["todo"]["getAll"]["0"];
 
-const TodoList: React.FC = () => {
+//REACT COMPONENT
+const Todos = () => {
   const { data: sessionData } = useSession();
-  // const [selectedTodoList, setSelectedTodoList] = useState<TodoList | null>(
-  //   null
-  // );
+  const { selectedTodoList } = useContext(TodoListContext);
 
-  const { selectedTodoList, setSelectedTodoList } = useContext(TodoListContext);
-  const [todoListItem, setTodoListItem] = useState({
+  // TODO-ITEM STATES
+  const [selectedTodo, setSelectedTodo] = useState<Todo | undefined | null>(
+    null
+  );
+  const [editTodo, setEditTodo] = useState({
     id: "",
-    name: "",
+    title: "",
+    description: "",
   });
 
-  // Get all Todo Lists
-  const { data: todoList, refetch: refetchTodoList } =
-    api.todoList.getAll.useQuery(
-      undefined, // no input
-      {
-        enabled: sessionData?.user !== undefined,
-      }
-    );
+  const { data: todos, refetch: refetchTodos } = api.todo.getAll.useQuery(
+    { todoListId: selectedTodoList?.id ?? "" },
+    {
+      enabled: sessionData?.user !== undefined,
+      onSuccess: (data) => {
+        setSelectedTodo(selectedTodo ?? data[0] ?? null);
+      },
+    }
+  );
 
-  // To Create a TodoList
-  const createTodoList = api.todoList.createOrUpdate.useMutation({
+  // To Create a Todo Sub-Task
+  const createTodo = api.todo.createOrUpdate.useMutation({
     onSuccess: async () => {
-      await refetchTodoList();
+      await refetchTodos();
     },
   });
 
-  // Delete a TodoList
-  const deleteTodoList = api.todoList.delete.useMutation({
+  // Mark Todo Completed
+  const markDone = api.todo.markDone.useMutation({
     onSuccess: () => {
-      void refetchTodoList();
+      void refetchTodos();
     },
   });
 
-  // Mark Todo List Completed
-  const markDone = api.todoList.markDone.useMutation({
+  // Mark Todo NOT Completed
+  const markUnDone = api.todo.markUnDone.useMutation({
     onSuccess: () => {
-      void refetchTodoList();
+      void refetchTodos();
     },
   });
 
-  // Mark Todo List NOT Completed
-  const markUnDone = api.todoList.markUnDone.useMutation({
+  // Delete a Todo
+  const deleteTodo = api.todoList.delete.useMutation({
     onSuccess: () => {
-      void refetchTodoList();
+      void refetchTodos();
     },
   });
-
-  // Clean up all fields
-  const handleResetInputs = () => {
-    setTodoListItem({ name: "", id: "" });
-    setTodoListItem({ name: "", id: "" });
-  };
 
   const handleCreateOrUpdate = () => {
-    if (todoListItem.name == "") {
+    if (editTodo.title == "") {
       return;
     } else {
-      createTodoList.mutate({
-        name: todoListItem.name,
-        id: todoListItem.id,
+      createTodo.mutate({
+        id: editTodo.id,
+        title: editTodo.title,
+        description: editTodo.description,
+        todoListId: String(selectedTodoList?.id),
       });
     }
-    handleResetInputs();
+    handleResets();
   };
 
+  // Clean up all fields
+  const handleResets = () => {
+    setEditTodo({ id: "", title: "", description: "" });
+  };
   return (
-    <div className="flex max-w-xl flex-[0.40] flex-col ">
-      <div className="flex gap-3 px-2 md:gap-6">
-        <input
-          type="text"
-          name=""
-          value={todoListItem.name}
-          placeholder="Pick up groceries from..."
-          className="input-bordered input input-md w-full bg-[#020005] placeholder:text-white/20"
-          onChange={(e) => {
-            setTodoListItem({ ...todoListItem, name: e.currentTarget.value });
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && e.currentTarget.value !== "")
-              handleCreateOrUpdate();
-          }}
-        />
-        <button
-          className="text-md btn-primary btn font-semibold capitalize"
-          onClick={handleCreateOrUpdate}
+    <>
+      {todos && todos?.length !== 0 ? (
+        <ul
+          className={`menu rounded-box min-h-[120px] w-full bg-[#15272c4a] p-2`}
         >
-          Create Todo List
-        </button>
-      </div>
-      <div className="divider"></div>
-      {todoList && todoList?.length !== 0 ? (
-        <ul className={`menu rounded-box min-h-16 w-full bg-[#15272c4a] p-2`}>
-          {todoList?.map((listItem) => {
+          {todos?.map((listItem) => {
             return (
               <li
                 key={listItem.id}
                 className={`${
-                  selectedTodoList === listItem ? "bg-[#0d2434fc]" : ""
+                  selectedTodo === listItem ? "bg-[#0d2434fc]" : ""
                 }  flex flex-row items-center rounded-2xl pr-3 hover:bg-[#15162c4a]`}
                 onClick={() => {
-                  setSelectedTodoList(listItem);
+                  setSelectedTodo(listItem);
                 }}
               >
                 <label className="label cursor-pointer bg-transparent hover:bg-transparent">
                   <input
                     type="checkbox"
-                    checked={listItem.completed}
-                    className="checkbox-primary checkbox  rounded-full border-[1px]"
+                    checked={Boolean(listItem.completed)}
+                    className="checkbox-primary checkbox checkbox-sm  rounded-full border-[1px]"
                     onClick={() => {
                       if (listItem.completed) {
                         markUnDone.mutate({ id: listItem.id });
@@ -134,10 +118,10 @@ const TodoList: React.FC = () => {
                   } -ml-4 mr-auto bg-transparent outline-none`}
                   onClick={(e) => {
                     e.preventDefault();
-                    setSelectedTodoList(listItem);
+                    setSelectedTodo(listItem);
                   }}
                 >
-                  {listItem.name}
+                  {listItem.title}
                 </Link>
 
                 <span className="max-w-[145px] bg-transparent outline-none ">
@@ -145,7 +129,11 @@ const TodoList: React.FC = () => {
                     href="#edit"
                     className="btn-sm btn bg-primary capitalize text-black hover:bg-primary/60"
                     onClick={() => {
-                      setTodoListItem({ name: listItem.name, id: listItem.id });
+                      setEditTodo({
+                        title: listItem.title,
+                        description: listItem.description,
+                        id: listItem.id,
+                      });
                     }}
                   >
                     Edit
@@ -156,13 +144,13 @@ const TodoList: React.FC = () => {
                       <input
                         type="text"
                         name=""
-                        value={todoListItem.name}
+                        value={editTodo.title}
                         placeholder="Pick up groceries from..."
                         className="input-bordered input input-md w-full bg-[#020005] placeholder:text-white/20"
                         onChange={(e) => {
-                          setTodoListItem({
-                            ...todoListItem,
-                            name: e.currentTarget.value,
+                          setEditTodo({
+                            ...editTodo,
+                            title: e.currentTarget.value,
                           });
                         }}
                         onKeyDown={(e) => {
@@ -171,7 +159,6 @@ const TodoList: React.FC = () => {
                             e.currentTarget.value !== ""
                           ) {
                             handleCreateOrUpdate();
-                            handleResetInputs();
                           }
                         }}
                       />
@@ -187,7 +174,7 @@ const TodoList: React.FC = () => {
                         <a
                           href="#"
                           className="text-md btn-error btn font-semibold capitalize"
-                          onClick={handleResetInputs}
+                          onClick={handleResets}
                         >
                           Cancel
                         </a>
@@ -204,15 +191,15 @@ const TodoList: React.FC = () => {
                     <label htmlFor="" className="modal-box">
                       <p>Are you sure you want to delete the TodoList?</p>
                       <h2 className="text-xl font-semibold">
-                        &ldquo;{listItem.name}&ldquo;
+                        &ldquo;{listItem.title}&ldquo;
                       </h2>
                       <div className="modal-action">
                         <a
                           href="#"
                           className="text-md btn-error btn font-semibold capitalize"
                           onClick={() => {
-                            deleteTodoList.mutate({ id: listItem.id });
-                            handleResetInputs();
+                            deleteTodo.mutate({ id: listItem.id });
+                            handleResets();
                           }}
                         >
                           Confirm Delete
@@ -220,7 +207,7 @@ const TodoList: React.FC = () => {
                         <a
                           href="#"
                           className="text-md btn-primary btn font-semibold capitalize"
-                          onClick={handleResetInputs}
+                          onClick={handleResets}
                         >
                           Cancel
                         </a>
@@ -233,10 +220,10 @@ const TodoList: React.FC = () => {
           })}
         </ul>
       ) : (
-        <EmptyState text={"You have Nothing here yet!"} />
+        <EmptyState text={"You have no Sub-Tasks here!"} />
       )}
-    </div>
+    </>
   );
 };
 
-export default TodoList;
+export default Todos;

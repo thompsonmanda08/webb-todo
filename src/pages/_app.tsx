@@ -5,7 +5,6 @@ import { SessionProvider } from "next-auth/react";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
-import { TodoListContext } from "~/context/todoListContext";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
